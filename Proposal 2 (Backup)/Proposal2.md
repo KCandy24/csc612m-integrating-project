@@ -1,16 +1,14 @@
 # Fused CUDA Kernel for High-Throughput Vector Search 
 
 ## Abstract of your proposed project
-Standard vector search engines process relational queries using a multi-pass approach: the GPU calculates floating-point similarity scores (e.g., Cosine Distance) across millions of document embeddings in memory first, before the CPU checks for the metadata conditions to filter out non-matching results. This separation creates severe memory bandwidth bottlenecks and prolongs execution time by writing and reading millions of candidate vectors that may ultimately be discarded.
-
 This project proposes a single-pass, fused custom CUDA kernel that evaluates metadata conditions and vector similarity concurrently within the same GPU execution thread. By performing a bitwise metadata check before floating-point arithmetic, the proposed kernel triggers warp-synchronized early exits, bypassing unnecessary memory fetches and compute cycles for non-matching documents. 
 
 ## Description of your proposed project
 ### What are the inputs to your project?
 	
-High-dimensional floating-point array representing N document vectors stored in GPU VRAM
-Metadata bitmask array where individual bits represent categorical attributes
-Query vector along with a target search bitmask representing the required filtering constraints
+* High-dimensional floating-point array representing N document vectors stored in GPU VRAM
+* Metadata bitmask array where individual bits represent categorical attributes
+* Query vector along with a target search bitmask representing the required filtering constraints
 	
 ### Propose process
 1. What processes will be parallelized using SIMT (GPU/CUDA) or SIMD-based AVX/AVX2/AVX512 assembly project?
