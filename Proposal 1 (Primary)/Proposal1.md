@@ -23,11 +23,10 @@ Common deep learning pipelines implement these steps using high-level frameworks
 Our implementation differs by executing direct memory arrangements via AVX2 assembly kernels. We aim to maximize memory throughput and minimize processing latency on CPU platforms. 
 
 3. Discuss plans on how to parallelize your proposed process.
-Grayscale conversion
 
-Load packed single-precision floating-point pixel channel values into 128-bit XMM and 256-bit YMM registers. Use vector addition and multiplication with a broadcast factor of ⅓ to convert from RGB to Grayscale across 4 (XMM) or 8 (YMM) pixels following the formula: Imgray(x,y)=13(ImR(x,y)+ImG(x,y)+ImB(x,y)) 
+* **Grayscale conversion**: Load packed single-precision RGB pixel channels into 128-bit XMM and 256-bit YMM registers. Compute the grayscale average across 4 (XMM) or 8 (YMM) pixels simultaneously in a single clock cycle using the formula: Imgray(x,y)=13(ImR(x,y)+ImG(x,y)+ImB(x,y)) 
 
-Vertical Flipping: Rows will be loaded in SIMD registers and written to mirrored row positions in the destination buffer.
+* **Vertical Flipping**: Immediately write the computed grayscale vector directly to its mirrored row position in the destination buffer, completing both the mathematical conversion and the vertical flip in a single memory pass.
 
 4. What other processes are in the project but will not be parallelized
 
