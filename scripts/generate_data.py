@@ -4,7 +4,7 @@ import random
 from pathlib import Path
 
 
-NUM_DOCS = 100
+NUM_DOCS = 100000
 VECTOR_DIMS = 50
 BITMASK_BITS = 5
 MAX_BITMASK = (1 << BITMASK_BITS) - 1
