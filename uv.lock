@@ -160,6 +160,25 @@ wheels = [
 ]
 
 [[package]]
+name = "csc612m-integrating-project"
+version = "0.1.0"
+source = { virtual = "." }
+dependencies = [
+    { name = "kagglehub" },
+    { name = "pandas" },
+    { name = "pyarrow" },
+    { name = "sentence-transformers" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "kagglehub", specifier = ">=1.0.3" },
+    { name = "pandas", specifier = ">=3.1.1" },
+    { name = "pyarrow", specifier = ">=26.0.1" },
+    { name = "sentence-transformers", specifier = ">=6.2.0" },
+]
+
+[[package]]
 name = "cuda-bindings"
 version = "13.5.0"
 source = { registry = "https://pypi.org/simple" }
@@ -229,25 +248,6 @@ nvrtc = [
 ]
 nvtx = [
     { name = "nvidia-nvtx", marker = "platform_machine == 'aarch64' or platform_machine == 'x86_64'" },
-]
-
-[[package]]
-name = "dataset"
-version = "0.1.0"
-source = { editable = "." }
-dependencies = [
-    { name = "kagglehub" },
-    { name = "pandas" },
-    { name = "pyarrow" },
-    { name = "sentence-transformers" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "kagglehub", specifier = ">=1.0.3" },
-    { name = "pandas", specifier = ">=3.1.1" },
-    { name = "pyarrow", specifier = ">=26.0.1" },
-    { name = "sentence-transformers", specifier = ">=6.2.0" },
 ]
 
 [[package]]
