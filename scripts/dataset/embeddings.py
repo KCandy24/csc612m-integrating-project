@@ -8,10 +8,10 @@ class Embedder():
         self.model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
 
     def encode(self, texts):
-        return self.model.encode(texts)
+        return self.model.encode(texts, show_progress_bar=True)
 
 def load_data():
-    project_root = Path(__file__).resolve().parent.parent.parent.patent
+    project_root = Path(__file__).resolve().parent.parent.parent
     load_path = project_root / "data" / "310" / "processed_arxiv.parquet"
     
     print("Loading Parquet file...")
@@ -20,7 +20,7 @@ def load_data():
     return df
 
 def main() -> None:
-    project_root = Path(__file__).resolve().parent.parent.parent
+    project_root = Path(__file__).resolve().parent.parent.parent.parent
     data_dir = project_root / "data" / "310"
     json_path = data_dir / "arxiv-metadata-oai-snapshot.json"
 
@@ -35,10 +35,12 @@ def main() -> None:
     df['category_multihot'] = category_dummies.values.tolist()
 
 
-    df = df[['id', 'categories', 'category_multihot', 'abstract_embedding']]
+    df_search = df.iloc[:9990].copy()
+    df_query = df.iloc[9990:10000].copy()
     
-    df.to_parquet(data_dir / "processed_arxiv.parquet", engine='pyarrow')
-
+    print("Saving to parquet...")
+    df_search.to_parquet(data_dir / "processed_arxiv_search.parquet", engine='pyarrow')
+    df_query.to_parquet(data_dir / "processed_arxiv_query.parquet", engine='pyarrow')
 
 if __name__ == "__main__":
     main()
