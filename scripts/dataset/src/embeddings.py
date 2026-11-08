@@ -11,7 +11,7 @@ class Embedder():
         return self.model.encode(texts)
 
 def load_data():
-    project_root = Path(__file__).resolve().parent.parent.parent
+    project_root = Path(__file__).resolve().parent.parent.parent.patent
     load_path = project_root / "data" / "310" / "processed_arxiv.parquet"
     
     print("Loading Parquet file...")

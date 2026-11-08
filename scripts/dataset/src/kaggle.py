@@ -8,7 +8,7 @@ def main() -> None:
     source_path = Path(downloaded_path_str)
     print("Path to dataset files:", source_path)
 
-    project_root = Path(__file__).resolve().parent.parent.parent
+    project_root = Path(__file__).resolve().parent.parent.parent.parent
     dst = project_root / "data" / source_path.name
 
     dst.parent.mkdir(parents=True, exist_ok=True)
