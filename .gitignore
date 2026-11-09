@@ -1,4 +1,7 @@
 data/*
 
-dataset/.kaggle/*
+scripts/dataset/.kaggle/*
 .exe
+
+*.sh
+*.bat
