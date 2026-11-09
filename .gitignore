@@ -1,7 +1,11 @@
 data/*
 
 scripts/dataset/.kaggle/*
+src/search/build/*
+src/search/*.so
+
 .exe
 
 *.sh
 *.bat
+out.txt
