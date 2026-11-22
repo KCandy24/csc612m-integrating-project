@@ -4,6 +4,8 @@ from setuptools import setup
 
 setup(
     name="naive_search",
-    ext_modules=[Pybind11Extension("naive_search", ["bindings.cpp"])],
+    ext_modules=[Pybind11Extension("naive_search", ["bindings.cpp"],
+                      depends=["naive_search.h"],
+                      extra_compile_args=["-O3"])],
     cmdclass={"build_ext": build_ext},
 )

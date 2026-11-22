@@ -11,28 +11,39 @@ K = 5
 RUNS = 20
 
 
+def pack_tags(tags):
+    """(rows, C) of 0/1 -> (rows, ceil(C / 32)) uint32 words; tag t is bit t % 32 of word t // 32."""
+    rows, num_tags = tags.shape
+    words = (num_tags + 31) // 32
+    bits = np.zeros((rows, words * 32), dtype=np.uint32)
+    bits[:, :num_tags] = tags != 0
+    bits = bits.reshape(rows, words, 32) << np.arange(32, dtype=np.uint32)
+    return bits.sum(axis=2, dtype=np.uint32)
+
+
 def load(name):
     df = pd.read_parquet(DATA_DIR / name)
     vectors = np.array(df["abstract_embedding"].tolist())
-    tags = np.array(df["category_multihot"].tolist())
-    return df, vectors, tags
+    masks = pack_tags(np.array(df["category_multihot"].tolist()))
+    return df, vectors, masks
 
 
 def abstract(df, i):
+    # arXiv abstracts contain line breaks and leading spaces; flatten them
     return " ".join(df["abstract"].iloc[i].split())
 
 
 def main():
-    docs, vectors, tags = load("processed_arxiv_search.parquet")
-    queries, q_vectors, q_tags = load("processed_arxiv_query.parquet")
+    docs, vectors, masks = load("processed_arxiv_search.parquet")
+    queries, q_vectors, q_masks = load("processed_arxiv_query.parquet")
 
-    index = NaiveSearch(vectors, tags)
-    print(f"Loaded N={len(docs)} docs, D={vectors.shape[1]} dims, {tags.shape[1]} tags, K={K}")
+    index = NaiveSearch(vectors, masks)
+    print(f"Loaded N={len(docs)} docs, D={vectors.shape[1]} dims, {32 * masks.shape[1]}-bit masks, K={K}")
 
     for i in range(len(queries)):
         start = time.perf_counter()
         for _ in range(RUNS):
-            ids, scores = index.search(q_vectors[i], q_tags[i], K)
+            ids, scores = index.search(q_vectors[i], q_masks[i], K)
         ms = (time.perf_counter() - start) * 1000 / RUNS
 
         print(f"\nQuery {queries['id'].iloc[i]} [{queries['categories'].iloc[i]}]: "

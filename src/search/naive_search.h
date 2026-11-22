@@ -1,8 +1,8 @@
 // =====================================================================
 // NaiveSearch: brute-force filtered top-K search (CPU baseline).
 //
-// Each document has an embedding (dim floats) and a multi-hot tag vector
-// (num_tags values, 0 or 1) that is stored as bitmask words, 32 tags per word.
+// Each document has an embedding (dim floats) and a tag bitmask of `words`
+// 32-bit words (a set bit = the document has that tag). The caller packs the tags.
 //
 // Rules: ALL query tags required: (doc & q) == q on every word.
 //        Score is the dot product (= cosine for unit-length embeddings).
@@ -15,43 +15,37 @@
 
 class NaiveSearch {
 public:
-    // vectors: n * dim floats, tags: n * num_tags bytes (0 or 1), both row-major.
-    NaiveSearch(const float *vectors, const uint8_t *tags, int n, int dim, int num_tags) {
+    // vectors: n * dim floats, masks: n * words uint32 words, both row-major.
+    NaiveSearch(const float *vectors, const uint32_t *masks, int n, int dim, int words) {
         n_ = n;
         dim_ = dim;
-        num_tags_ = num_tags;
-        words_ = (num_tags + 31) / 32;
+        words_ = words;
 
         vectors_.assign(vectors, vectors + (size_t)n * dim);
-        masks_.assign((size_t)n * words_, 0);
-        for (int i = 0; i < n; i++) {
-            pack(tags + (size_t)i * num_tags, masks_.data() + (size_t)i * words_);
-        }
+        masks_.assign(masks, masks + (size_t)n * words);
     }
 
     int dim() const { return dim_; }
-    int num_tags() const { return num_tags_; }
+    int words() const { return words_; }
 
+    // query_mask: `words` uint32 words.
     // Writes the best (up to) k matches, best first, into out_ids / out_scores
     // (room for k entries each) and returns how many were found.
-    int search(const float *query, const uint8_t *query_tags, int k,
+    int search(const float *query, const uint32_t *query_mask, int k,
                int *out_ids, float *out_scores) const {
         if (k <= 0) return 0;
 
-        std::vector<uint32_t> qmask(words_, 0);
-        pack(query_tags, qmask.data());
-
         int count = 0;
         for (int i = 0; i < n_; i++) {
+            // filter
+            if (!has_all_tags(i, query_mask)) continue;
+
             // dot product here for scoring
             const float *v = &vectors_[(size_t)i * dim_];
             float score = 0.0f;
             for (int d = 0; d < dim_; d++) {
                 score += query[d] * v[d];
             }
-
-            // filter
-            if (!has_all_tags(i, qmask)) continue;
 
             // if full, only proceed if it beats the last (worst) entry.
             if (count == k && !better(i, score, out_ids[k - 1], out_scores[k - 1])) continue;
@@ -71,22 +65,15 @@ public:
     }
 
 private:
-    int n_, dim_, num_tags_, words_;
+    int n_, dim_, words_;
     std::vector<float> vectors_;
     std::vector<uint32_t> masks_;
 
-    // Sets bit t of the (zeroed) output words for every tags[t] != 0.
-    void pack(const uint8_t *tags, uint32_t *words) const {
-        for (int t = 0; t < num_tags_; t++) {
-            if (tags[t]) words[t / 32] |= 1u << (t % 32);
-        }
-    }
-
-    // true if document i has every tag that is set in qmask.
-    bool has_all_tags(int i, const std::vector<uint32_t> &qmask) const {
+    // true if document i has every tag that is set in query_mask.
+    bool has_all_tags(int i, const uint32_t *query_mask) const {
         const uint32_t *m = masks_.data() + (size_t)i * words_;
         for (int w = 0; w < words_; w++) {
-            if ((m[w] & qmask[w]) != qmask[w]) return false;
+            if ((m[w] & query_mask[w]) != query_mask[w]) return false;
         }
         return true;
     }

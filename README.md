@@ -9,3 +9,5 @@ The file should contain the following:
 ```
 
 Once UV and kaggle is set up run `uv sync` and `uv run src/kaggle.py` in the dataset folder.
+
+

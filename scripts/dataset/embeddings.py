@@ -13,34 +13,36 @@ class Embedder():
 def load_data():
     project_root = Path(__file__).resolve().parent.parent.parent
     load_path = project_root / "data" / "310" / "processed_arxiv.parquet"
-    
+
     print("Loading Parquet file...")
     df = pd.read_parquet(load_path, engine='pyarrow')
-    
+
     return df
 
 def main() -> None:
-    project_root = Path(__file__).resolve().parent.parent.parent.parent
+    project_root = Path(__file__).resolve().parent.parent.parent
     data_dir = project_root / "data" / "310"
     json_path = data_dir / "arxiv-metadata-oai-snapshot.json"
 
     df = pd.read_json(json_path, lines=True, nrows=10000)
 
-    embedder = Embedder()
-    embeddings = embedder.encode(df['abstract'].tolist())
-    df['abstract_embedding'] = embeddings.tolist()
+    # embedder = Embedder()
+    # embeddings = embedder.encode(df['abstract'].tolist())
+    # df['abstract_embedding'] = embeddings.tolist()
 
 
     category_dummies = df['categories'].str.get_dummies(sep=' ')
     df['category_multihot'] = category_dummies.values.tolist()
+    print(category_dummies)
+    print(df['category_multihot'])
 
 
-    df_search = df.iloc[:9990].copy()
-    df_query = df.iloc[9990:10000].copy()
-    
-    print("Saving to parquet...")
-    df_search.to_parquet(data_dir / "processed_arxiv_search.parquet", engine='pyarrow')
-    df_query.to_parquet(data_dir / "processed_arxiv_query.parquet", engine='pyarrow')
+    # df_search = df.iloc[:9990].copy()
+    # df_query = df.iloc[9990:10000].copy()
+
+    # print("Saving to parquet...")
+    # df_search.to_parquet(data_dir / "processed_arxiv_search.parquet", engine='pyarrow')
+    # df_query.to_parquet(data_dir / "processed_arxiv_query.parquet", engine='pyarrow')
 
 if __name__ == "__main__":
     main()
